@@ -16,12 +16,14 @@ let builder = new BUILDER.JsonBuilder();
 // Start JSON object/document
 builder.Document();
 
-// Option 1
+
+// ===== OPTION 1
 builder.Property("Name")
 builder.Text("John");
 
-// Option 2 (more readable than option 1)
+// ===== OPTION 2 (more readable than option 1)
 builder.Property("Age").Number("28");
+
 
 // After every Property call, builder assumes value (Text, Number, Object or Array) will come next.
 builder.Property("ID").Number("623213244");
