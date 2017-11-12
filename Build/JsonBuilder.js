@@ -13,7 +13,7 @@ class JsonBuilder {
         // determines whether json is readable
         this._makeReadable = true;
         this._value = "";
-        this._itemCounter = 0;
+        this._itemsCounter = [];
         this._isName = false;
         this._isValue = false;
         this._lastStartType = [];
@@ -30,6 +30,7 @@ class JsonBuilder {
     */
     Append(text) {
         this._value += text;
+        return this;
     }
     /*
         Appends new line to the builder.
@@ -63,10 +64,10 @@ class JsonBuilder {
     Object() {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         if (this._lastStartType[this._lastStartType.length - 1] == StartType.Array) {
-            if (this._itemCounter > 0) {
+            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
                 this.Append(",");
             }
         }
@@ -77,7 +78,8 @@ class JsonBuilder {
         // increase at the end
         this._tabsCounter++;
         // reset item count
-        this._itemCounter = 0;
+        this._itemsCounter.push(0);
+        return this;
     }
     /*
         Start json array.
@@ -85,7 +87,7 @@ class JsonBuilder {
     Array() {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         this.Append("[");
         this.appendEmptySpace();
@@ -93,7 +95,8 @@ class JsonBuilder {
         this._isName = false;
         this._lastStartType.push(StartType.Array);
         // reset item count
-        this._itemCounter = 0;
+        this._itemsCounter.push(0);
+        return this;
     }
     /*
         Add item to an array.
@@ -101,20 +104,21 @@ class JsonBuilder {
     Item(text) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         let lastType = this._lastStartType[this._lastStartType.length - 1];
         if (lastType == StartType.Array) {
-            if (this._itemCounter > 0) {
+            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
                 this.Append(",");
                 this.appendEmptySpace();
             }
             this.Append(text);
-            this._itemCounter++;
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else {
             DEBUG.Browser.Error("Item() can only be called after Array() function was called.");
         }
+        return this;
     }
     /*
         Add text item to an array.
@@ -122,22 +126,23 @@ class JsonBuilder {
     TextItem(text) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         let lastType = this._lastStartType[this._lastStartType.length - 1];
         if (lastType == StartType.Array) {
-            if (this._itemCounter > 0) {
+            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
                 this.Append(",");
                 this.appendEmptySpace();
             }
             this.Append('"');
             this.Append(text);
             this.Append('"');
-            this._itemCounter++;
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else {
             DEBUG.Browser.Error("TextItem() can only be called after Array() function was called.");
         }
+        return this;
     }
     /*
         End json array.
@@ -145,7 +150,7 @@ class JsonBuilder {
     End() {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         let lastType = this._lastStartType.pop();
         if (lastType == StartType.Document) {
@@ -163,7 +168,8 @@ class JsonBuilder {
             this.appendTabs();
             this.Append("}");
         }
-        this._itemCounter = 0;
+        this._itemsCounter.pop();
+        return this;
     }
     /*
         Adds the property name and also name/value separator.
@@ -171,15 +177,15 @@ class JsonBuilder {
     Name(name) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
         if (lastStartType == StartType.Array) {
             DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return;
+            return this;
         }
         if (this._isName == false) {
-            if (this._itemCounter > 0) {
+            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
                 this.Append(",");
             }
             this.appendNewLine();
@@ -191,11 +197,12 @@ class JsonBuilder {
             this.Append(":");
             this._isName = true;
             this._isValue = false;
-            this._itemCounter++;
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else {
             DEBUG.Browser.Error("Name() has already been called. Expecting Value() to be called next!");
         }
+        return this;
     }
     /*
         Adds property value.
@@ -203,12 +210,12 @@ class JsonBuilder {
     Value(text) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
         if (lastStartType == StartType.Array) {
             DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return;
+            return this;
         }
         if (this._isName == true) {
             if (this._isValue == false) {
@@ -223,6 +230,7 @@ class JsonBuilder {
         else {
             DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling Value()!");
         }
+        return this;
     }
     /*
         Adds the property value as a text (uses double quotation marks).
@@ -230,12 +238,12 @@ class JsonBuilder {
     TextValue(text) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return;
+            return this;
         }
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
         if (lastStartType == StartType.Array) {
             DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return;
+            return this;
         }
         if (this._isName == true) {
             if (this._isValue == false) {
@@ -252,6 +260,7 @@ class JsonBuilder {
         else {
             DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling TextValue()!");
         }
+        return this;
     }
     /*
         Starts JSON document (root object).
@@ -260,10 +269,12 @@ class JsonBuilder {
         if (this._lastStartType.length == 0) {
             this.Append("{");
             this._lastStartType.push(StartType.Document);
+            this._itemsCounter.push(0);
         }
         else {
             DEBUG.Browser.Error("JSON document not started! Call Document() first!");
         }
+        return this;
     }
     /*
         Returns the json in string format.
