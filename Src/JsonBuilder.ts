@@ -96,6 +96,12 @@ export class JsonBuilder
     */
     public Object(): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
         if(this._lastStartType[this._lastStartType.length - 1] == StartType.Array)
         {
             if(this._itemCounter > 0)
@@ -121,6 +127,12 @@ export class JsonBuilder
     */
     public Array(): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
         this.Append("[");
         this.appendEmptySpace();
         this._isValue = true;
@@ -137,6 +149,12 @@ export class JsonBuilder
     */
     public Item(text: string): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
         let lastType = this._lastStartType[this._lastStartType.length - 1];
 
         if(lastType == StartType.Array)
@@ -153,7 +171,7 @@ export class JsonBuilder
         }
         else
         {
-            DEBUG.Browser.Error("Item function can only be called after Array function was called.");
+            DEBUG.Browser.Error("Item() can only be called after Array() function was called.");
         }
     }
 
@@ -162,6 +180,12 @@ export class JsonBuilder
     */
     public TextItem(text: string): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
         let lastType = this._lastStartType[this._lastStartType.length - 1];
 
         if(lastType == StartType.Array)
@@ -180,7 +204,7 @@ export class JsonBuilder
         }
         else
         {
-            DEBUG.Browser.Error("TextItem function can only be called after Array function was called.");
+            DEBUG.Browser.Error("TextItem() can only be called after Array() function was called.");
         }
     }
 
@@ -189,9 +213,20 @@ export class JsonBuilder
     */
     public End(): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
         let lastType = this._lastStartType.pop();
 
-        if(lastType == StartType.Array)
+        if(lastType == StartType.Document)
+        {
+            this.appendNewLine();    
+            this.Append("}");
+        }
+        else if(lastType == StartType.Array)
         {
             this.appendEmptySpace();
             this.Append("]");
@@ -215,6 +250,20 @@ export class JsonBuilder
     */
     public Name(name: string): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
+        let lastStartType = this._lastStartType[this._lastStartType.length - 1];
+
+        if(lastStartType == StartType.Array)
+        {
+            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
+            return;
+        }
+
         if(this._isName == false)
         {
             if(this._itemCounter > 0)
@@ -239,7 +288,7 @@ export class JsonBuilder
         }
         else
         {
-            DEBUG.Browser.Error("Name has already been added. Builder is expecting value to be added next!");
+            DEBUG.Browser.Error("Name() has already been called. Expecting Value() to be called next!");
         }
     }
 
@@ -248,6 +297,20 @@ export class JsonBuilder
     */
     public Value(text: string): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
+        let lastStartType = this._lastStartType[this._lastStartType.length - 1];
+
+        if(lastStartType == StartType.Array)
+        {
+            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
+            return;
+        }
+
         if(this._isName == true)
         {
             if(this._isValue == false)
@@ -259,12 +322,12 @@ export class JsonBuilder
             }
             else
             {
-                DEBUG.Browser.Error("AddValue has already been called!");
+                DEBUG.Browser.Error("Value() has already been called!");
             }
         }
         else
         {
-            DEBUG.Browser.Error("Name has not been added yet. Call Name before calling Value!");
+            DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling Value()!");
         }
     }
 
@@ -273,6 +336,20 @@ export class JsonBuilder
     */
     public TextValue(text: string): void
     {
+        if(this._lastStartType.length == 0)
+        {
+            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
+            return;
+        }
+
+        let lastStartType = this._lastStartType[this._lastStartType.length - 1];
+
+        if(lastStartType == StartType.Array)
+        {
+            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
+            return;
+        }
+
         if(this._isName == true)
         {
             if(this._isValue == false)
@@ -286,12 +363,28 @@ export class JsonBuilder
             }
             else
             {
-                DEBUG.Browser.Error("AddValue has already been called!");
+                DEBUG.Browser.Error("TextValue() has already been called!");
             }
         }
         else
         {
-            DEBUG.Browser.Error("Name has not been added yet. Call Name before calling TextValue!");
+            DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling TextValue()!");
+        }
+    }
+
+    /*
+        Starts JSON document (root object).
+    */
+    public Document(): void
+    {
+        if(this._lastStartType.length == 0)
+        {
+            this.Append("{");
+            this._lastStartType.push(StartType.Document);
+        }
+        else
+        {
+            DEBUG.Browser.Error("JSON document not started! Call Document() first!");
         }
     }
 
@@ -300,18 +393,15 @@ export class JsonBuilder
     */
     public GetString(): string
     {
+        return this._value;
+    }
 
-        let jsonString = "{";
-        jsonString += this._value;
-
-        if(this._makeReadable == true)
-        {
-            jsonString += "\n";
-        }
-
-        jsonString += "}";
-
-        return jsonString;
+    /*
+        Returns JSON object.
+    */
+    public GetJson(): any
+    {
+        return JSON.parse(this._value);
     }
 }
 
@@ -319,7 +409,8 @@ export class JsonBuilder
     Enums for start type.
 */
 enum StartType {
-    Object = 1,
-    Array = 2,
+    Document = 1,
+    Object = 2,
+    Array = 3,
 }
 

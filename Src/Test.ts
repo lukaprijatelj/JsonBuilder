@@ -34,6 +34,7 @@ module TEST
             let importer = new ANNY.JsonBuilder();
 
 
+            importer.Document();
             importer.Name("Oseba");
             importer.Value("12");
             importer.Name("Carica");
@@ -62,6 +63,7 @@ module TEST
             //importer.Item("15");
             //importer.Item("1");
             //importer.TextItem("Hello");
+            importer.End();
             importer.End();
             importer.End();
             importer.End();
