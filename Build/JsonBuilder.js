@@ -2,11 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const DEBUG = require("./Diagnostics/Debug");
 /*
-    TODO:
-        - don't forget to comment out all DEBUG lines
-*/
-/*
-    Importer for FBX files (FBX ASCII file format)
+    Easy JSON builder library.
 */
 class JsonBuilder {
     constructor() {

@@ -1,6 +1,4 @@
-import * as FS from "fs"
 import * as DEBUG from "./Diagnostics/Debug"
-import $ = require("jquery")
 
 
 /* 
