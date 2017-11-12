@@ -1,0 +1,22 @@
+{
+  "name": "JOLY",
+  "version": "1.0.0",
+  "description": "This is a game engine called Joly.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "JOLY",
+    "game",
+    "engine"
+  ],
+  "devDependencies": {
+    "electron": "~1.7.8"
+  },
+  "dependencies": {
+    "@types/jquery": "^3.2.16",
+    "babylonjs": "^3.1.0-alpha3.6",
+    "xml-js": "^1.5.1"
+  }
+}
