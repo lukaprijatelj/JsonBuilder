@@ -1,64 +1,62 @@
 import $ = require("jquery")
-import * as ANNY from "./JsonBuilder"
+import * as BUILDER from "./JsonBuilder"
 
 
 $(document).ready(
     function(){
-        var tester = new TEST.Starter();
-        tester.Run();
+        TEST.Start();
     }
 );
 
 
 module TEST
 {    
-    /*
-        Engine structure to ignite.
-    */
-    export class Starter
+    export function Start(): void
     {
-        constructor()
-        {
+        var builder = new BUILDER.JsonBuilder();
 
-        }
+        // Start JSON object/document
+        builder.Document();
 
-        // runs the engine
-        public Run(): void
-        {
-            this.loadFBX();
-        }
+        // Option 1
+        builder.Property("Name")
+        builder.Text("John");
 
-        private loadFBX(): void
-        {
+        // Option 2 (more readable than option 1)
+        builder.Property("Age").Number("28");
+
+        // After every Property call, builder assumes value (Text, Number, Object or Array) will come next.
+        builder.Property("ID").Number("623213244");
+
+        // Json builder will automatically know what type he must end with End() call!
+        builder.Property("Description").Object()
+            .Property("Height").Number("178")
+            .Property("Width").Number("88")
+            .Property("Unit").Text("cm")
+        .End();
+
+        builder.Property("Town").Text("Ljubljana");
         
-            let importer = new ANNY.JsonBuilder();
+        // The use of Arrays
+        builder.Property("Food").Object()
+            .Property("Likes")
+                .Array().Text("Pizza").Text("Fries").Text("Ice cream").End()
+            .Property("Alergies").Text("None")
+            .Property("Dislikes")
+                .Array()
+                    .Text("Hamburger")
+                    .Text("Salad")
+                    .Text("Orange")
+                .End()
+        .End();
 
+        // End json object/document
+        builder.End();
 
-            importer.Document();
-            importer.Name("Name").TextValue("John");
-            importer.Name("Age").Value("18");
-            importer.Name("Description").Object();
-            importer.Name("Town").TextValue("Ljubljana");
-            importer.Name("ID").Value("623213244");
-            importer.Name("Dislikes").Object();
-            importer.Name("Food")
-                .Array().TextItem("Pizza").TextItem("Fries").TextItem("Ice cream").End();
-            importer.Name("Joho").Value("13");
-            importer.Name("Carica").Object();
-            importer.Name("Luka").TextValue("Hej hej kdor");
-            importer.Name("Joho").Value("13");
-            importer.Name("Tabelica").Array().Item("12").Item("15").Item("1").TextItem("Hello");
-            importer.End().End().End().End();
-            importer.End();
+        // Print json string
+        console.log(builder.GetString());
 
-            console.log(importer.GetString());
-
-
-            let vvv =  JSON.parse(importer.GetString());
-            console.log(vvv);
-
-        }
+        // Print json object
+        console.log(builder.GetJson());
     }
-
-
 }

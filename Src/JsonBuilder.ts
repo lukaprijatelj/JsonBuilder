@@ -2,13 +2,9 @@ import * as FS from "fs"
 import * as DEBUG from "./Diagnostics/Debug"
 import $ = require("jquery")
 
-/*
-    TODO:
-        - don't forget to comment out all DEBUG lines
-*/
 
 /* 
-    Importer for FBX files (FBX ASCII file format)
+    Easy JSON builder library.
 */
 export class JsonBuilder
 {
@@ -150,74 +146,6 @@ export class JsonBuilder
     } 
 
     /*
-        Add item to an array.
-    */
-    public Item(text: string): JsonBuilder
-    {
-        if(this._lastStartType.length == 0)
-        {
-            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return this;
-        }
-
-        let lastType = this._lastStartType[this._lastStartType.length - 1];
-
-        if(lastType == StartType.Array)
-        {
-            if(this._itemsCounter[this._itemsCounter.length - 1] > 0)
-            {
-                this.Append(",");
-                this.appendEmptySpace();
-            }
-            
-            this.Append(text);
-
-            this._itemsCounter[this._itemsCounter.length - 1]++;
-        }
-        else
-        {
-            DEBUG.Browser.Error("Item() can only be called after Array() function was called.");
-        }
-
-        return this;
-    }
-
-    /*
-        Add text item to an array.
-    */
-    public TextItem(text: string): JsonBuilder
-    {
-        if(this._lastStartType.length == 0)
-        {
-            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return this;
-        }
-
-        let lastType = this._lastStartType[this._lastStartType.length - 1];
-
-        if(lastType == StartType.Array)
-        {
-            if(this._itemsCounter[this._itemsCounter.length - 1] > 0)
-            {
-                this.Append(",");
-                this.appendEmptySpace();
-            }
-            
-            this.Append('"');
-            this.Append(text);
-            this.Append('"');
-
-            this._itemsCounter[this._itemsCounter.length - 1]++;
-        }
-        else
-        {
-            DEBUG.Browser.Error("TextItem() can only be called after Array() function was called.");
-        }
-
-        return this;
-    }
-
-    /*
         End json array.
     */
     public End(): JsonBuilder
@@ -258,7 +186,7 @@ export class JsonBuilder
     /* 
         Adds the property name and also name/value separator.
     */
-    public Name(name: string): JsonBuilder
+    public Property(name: string): JsonBuilder
     {
         if(this._lastStartType.length == 0)
         {
@@ -270,7 +198,7 @@ export class JsonBuilder
 
         if(lastStartType == StartType.Array)
         {
-            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
+            DEBUG.Browser.Error("Cannot add into array! Use Text() or Number() functions instead.");
             return this;
         }
 
@@ -307,7 +235,7 @@ export class JsonBuilder
     /*
         Adds property value.
     */
-    public Value(text: string): JsonBuilder
+    public Number(text: any): JsonBuilder
     {
         if(this._lastStartType.length == 0)
         {
@@ -319,27 +247,36 @@ export class JsonBuilder
 
         if(lastStartType == StartType.Array)
         {
-            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return this;
-        }
+            if(this._itemsCounter[this._itemsCounter.length - 1] > 0)
+            {
+                this.Append(",");
+                this.appendEmptySpace();
+            }
+            
+            this.Append(text);
 
-        if(this._isName == true)
-        {
-            if(this._isValue == false)
-            {
-                this.Append(text);
-                
-                this._isValue = true;
-                this._isName = false;
-            }
-            else
-            {
-                DEBUG.Browser.Error("Value() has already been called!");
-            }
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else
         {
-            DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling Value()!");
+            if(this._isName == true)
+            {
+                if(this._isValue == false)
+                {
+                    this.Append(text);
+                    
+                    this._isValue = true;
+                    this._isName = false;
+                }
+                else
+                {
+                    DEBUG.Browser.Error("Value() has already been called!");
+                }
+            }
+            else
+            {
+                DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling Value()!");
+            }    
         }
 
         return this;
@@ -348,7 +285,7 @@ export class JsonBuilder
     /*
         Adds the property value as a text (uses double quotation marks).
     */
-    public TextValue(text: string): JsonBuilder
+    public Text(text: string): JsonBuilder
     {
         if(this._lastStartType.length == 0)
         {
@@ -360,29 +297,40 @@ export class JsonBuilder
 
         if(lastStartType == StartType.Array)
         {
-            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return this;
-        }
+            if(this._itemsCounter[this._itemsCounter.length - 1] > 0)
+            {
+                this.Append(",");
+                this.appendEmptySpace();
+            }
+            
+            this.Append('"');
+            this.Append(text);
+            this.Append('"');
 
-        if(this._isName == true)
-        {
-            if(this._isValue == false)
-            {
-                this.Append('"');
-                this.Append(text);
-                this.Append('"');
-                
-                this._isValue = true;
-                this._isName = false;
-            }
-            else
-            {
-                DEBUG.Browser.Error("TextValue() has already been called!");
-            }
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else
         {
-            DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling TextValue()!");
+            if(this._isName == true)
+            {
+                if(this._isValue == false)
+                {
+                    this.Append('"');
+                    this.Append(text);
+                    this.Append('"');
+                    
+                    this._isValue = true;
+                    this._isName = false;
+                }
+                else
+                {
+                    DEBUG.Browser.Error("TextValue() has already been called!");
+                }
+            }
+            else
+            {
+                DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling TextValue()!");
+            }
         }
 
         return this;

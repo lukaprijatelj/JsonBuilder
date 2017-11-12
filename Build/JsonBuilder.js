@@ -99,52 +99,6 @@ class JsonBuilder {
         return this;
     }
     /*
-        Add item to an array.
-    */
-    Item(text) {
-        if (this._lastStartType.length == 0) {
-            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return this;
-        }
-        let lastType = this._lastStartType[this._lastStartType.length - 1];
-        if (lastType == StartType.Array) {
-            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
-                this.Append(",");
-                this.appendEmptySpace();
-            }
-            this.Append(text);
-            this._itemsCounter[this._itemsCounter.length - 1]++;
-        }
-        else {
-            DEBUG.Browser.Error("Item() can only be called after Array() function was called.");
-        }
-        return this;
-    }
-    /*
-        Add text item to an array.
-    */
-    TextItem(text) {
-        if (this._lastStartType.length == 0) {
-            DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
-            return this;
-        }
-        let lastType = this._lastStartType[this._lastStartType.length - 1];
-        if (lastType == StartType.Array) {
-            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
-                this.Append(",");
-                this.appendEmptySpace();
-            }
-            this.Append('"');
-            this.Append(text);
-            this.Append('"');
-            this._itemsCounter[this._itemsCounter.length - 1]++;
-        }
-        else {
-            DEBUG.Browser.Error("TextItem() can only be called after Array() function was called.");
-        }
-        return this;
-    }
-    /*
         End json array.
     */
     End() {
@@ -174,14 +128,14 @@ class JsonBuilder {
     /*
         Adds the property name and also name/value separator.
     */
-    Name(name) {
+    Property(name) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
             return this;
         }
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
         if (lastStartType == StartType.Array) {
-            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
+            DEBUG.Browser.Error("Cannot add into array! Use Text() or Number() functions instead.");
             return this;
         }
         if (this._isName == false) {
@@ -207,58 +161,72 @@ class JsonBuilder {
     /*
         Adds property value.
     */
-    Value(text) {
+    Number(text) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
             return this;
         }
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
         if (lastStartType == StartType.Array) {
-            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return this;
-        }
-        if (this._isName == true) {
-            if (this._isValue == false) {
-                this.Append(text);
-                this._isValue = true;
-                this._isName = false;
+            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
+                this.Append(",");
+                this.appendEmptySpace();
             }
-            else {
-                DEBUG.Browser.Error("Value() has already been called!");
-            }
+            this.Append(text);
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else {
-            DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling Value()!");
+            if (this._isName == true) {
+                if (this._isValue == false) {
+                    this.Append(text);
+                    this._isValue = true;
+                    this._isName = false;
+                }
+                else {
+                    DEBUG.Browser.Error("Value() has already been called!");
+                }
+            }
+            else {
+                DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling Value()!");
+            }
         }
         return this;
     }
     /*
         Adds the property value as a text (uses double quotation marks).
     */
-    TextValue(text) {
+    Text(text) {
         if (this._lastStartType.length == 0) {
             DEBUG.Browser.Error("There is no root object. Document() to start Json object.");
             return this;
         }
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
         if (lastStartType == StartType.Array) {
-            DEBUG.Browser.Error("Cannot add into array! Use TextItem() or Item() functions instead.");
-            return this;
-        }
-        if (this._isName == true) {
-            if (this._isValue == false) {
-                this.Append('"');
-                this.Append(text);
-                this.Append('"');
-                this._isValue = true;
-                this._isName = false;
+            if (this._itemsCounter[this._itemsCounter.length - 1] > 0) {
+                this.Append(",");
+                this.appendEmptySpace();
             }
-            else {
-                DEBUG.Browser.Error("TextValue() has already been called!");
-            }
+            this.Append('"');
+            this.Append(text);
+            this.Append('"');
+            this._itemsCounter[this._itemsCounter.length - 1]++;
         }
         else {
-            DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling TextValue()!");
+            if (this._isName == true) {
+                if (this._isValue == false) {
+                    this.Append('"');
+                    this.Append(text);
+                    this.Append('"');
+                    this._isValue = true;
+                    this._isName = false;
+                }
+                else {
+                    DEBUG.Browser.Error("TextValue() has already been called!");
+                }
+            }
+            else {
+                DEBUG.Browser.Error("Name() has not been called yet. Call Name() before calling TextValue()!");
+            }
         }
         return this;
     }
