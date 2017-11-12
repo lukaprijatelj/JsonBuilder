@@ -2,17 +2,17 @@
 This is a library for building JSON objects. Library is very simple. It builds JSON object by using string concatenation.
 
 ## Referencing (Typescript)
-```
+```typescript
 import * as BUILDER from "./JsonBuilder"
 ```
 
 ## Usage (Typescript)
-```
+```typescript
 let builder = new BUILDER.JsonBuilder();
 ```
 
 ## Example
-```
+```typescript
 // Start JSON object/document
 builder.Document();
 
@@ -63,7 +63,7 @@ console.log(jsonString);
 
 
 ## Output
-```
+```json
 {
 	"Name":"John",
 	"Age":28,
