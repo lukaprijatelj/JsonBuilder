@@ -1,5 +1,5 @@
 import $ = require("jquery")
-import * as BUILDER from "./JsonBuilder"
+import { JsonBuilder } from './JsonBuilder';
 
 
 $(document).ready(
@@ -13,7 +13,7 @@ module TEST
 {    
     export function Start(): void
     {
-        var builder = new BUILDER.JsonBuilder();
+        var builder = new JsonBuilder();
 
         // Start JSON object/document
         builder.Document();

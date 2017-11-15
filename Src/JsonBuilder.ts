@@ -105,6 +105,8 @@ export class JsonBuilder
             }
         }
 
+        this.appendNewLine();
+        this.appendTabs();
         this.Append("{");
         this._lastStartType.push(StartType.Object);
         this._isValue = true;
@@ -112,6 +114,8 @@ export class JsonBuilder
 
         // increase at the end
         this._tabsCounter++;     
+
+        this._itemsCounter[this._itemsCounter.length - 1]++;
 
         // reset item count
         this._itemsCounter.push(0); 
@@ -130,12 +134,24 @@ export class JsonBuilder
             return this;
         }
 
+        if(this._lastStartType[this._lastStartType.length - 1] == StartType.Array)
+        {
+            if(this._itemsCounter[this._itemsCounter.length - 1] > 0)
+            {
+                this.Append(",");
+            }
+        }
+
         this.Append("[");
         this.appendEmptySpace();
         this._isValue = true;
         this._isName = false;
-
         this._lastStartType.push(StartType.Array);
+
+        // increase at the end
+        this._tabsCounter++;  
+
+        this._itemsCounter[this._itemsCounter.length - 1]++;
 
         // reset item count
         this._itemsCounter.push(0); 
@@ -163,6 +179,9 @@ export class JsonBuilder
         }
         else if(lastType == StartType.Array)
         {
+            // decrease at start
+            this._tabsCounter--;
+            
             this.appendEmptySpace();
             this.Append("]");
         }
@@ -193,6 +212,8 @@ export class JsonBuilder
         }
 
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
+        name = this.removeDoubleQuotes(name);
+        name = this.removeEscapeCharacters(name);
 
         if(lastStartType == StartType.Array)
         {
@@ -242,6 +263,7 @@ export class JsonBuilder
         }
 
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
+        text = this.removeDoubleQuotes(text);
 
         if(lastStartType == StartType.Array)
         {
@@ -281,6 +303,32 @@ export class JsonBuilder
     }
 
     /*
+        Removes escape characters. 
+        For example:
+            C:\Directory\File   (not valid JSON text)
+        To:
+            C:\\Directory\\File
+    */
+    private removeEscapeCharacters(text:string): string
+    {
+        text = text.replace(/\\/g,"\\\\");
+        return text;
+    }
+
+    /*
+        Removes double quotes if present.
+    */
+    private removeDoubleQuotes(text: string): string
+    {
+        if(text[0] == '"' && text[text.length - 1] == '"')
+        {
+            text = text.substr(1, text.length - 2);
+        }
+    
+        return text;
+    }
+
+    /*
         Adds the property value as a text (uses double quotation marks).
     */
     public Text(text: string): JsonBuilder
@@ -292,6 +340,8 @@ export class JsonBuilder
         }
 
         let lastStartType = this._lastStartType[this._lastStartType.length - 1];
+        text = this.removeDoubleQuotes(text);
+        text = this.removeEscapeCharacters(text);
 
         if(lastStartType == StartType.Array)
         {
